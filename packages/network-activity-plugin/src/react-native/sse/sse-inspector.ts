@@ -22,21 +22,21 @@ export const isSSEEvent = (type: string): type is keyof SSEEventMap => {
   return (SSE_EVENTS as readonly string[]).includes(type);
 };
 
+const getRequestId = (
+  eventSource: EventSourceWithInternals
+): string | null => {
+  const requestId = eventSource._xhr?._rozeniteRequestId;
+
+  if (!requestId) {
+    // It means that the EventSource was created before the inspector was enabled.
+    return null;
+  }
+
+  return requestId;
+};
+
 export const getSSEInspector = (): SSEInspector => {
   const eventEmitter = createNanoEvents<NanoEventsMap>();
-
-  const getRequestId = (
-    eventSource: EventSourceWithInternals
-  ): string | null => {
-    const requestId = eventSource._xhr?._rozeniteRequestId;
-
-    if (!requestId) {
-      // It means that the EventSource was created before the inspector was enabled.
-      return null;
-    }
-
-    return requestId;
-  };
 
   return {
     enable: () => {

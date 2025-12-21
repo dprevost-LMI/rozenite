@@ -9,6 +9,14 @@ export default defineConfig({
   base: './',
   test: {
     environment: 'node',
+    coverage: {
+      thresholds: {
+        lines: 31,
+        functions: 60,
+        branches: 91,
+        statements: 31,
+      },
+    },
   },
   plugins: [
     dts({

@@ -1,4 +1,3 @@
-/// <reference types='vitest' />
 import { defineConfig } from 'vite';
 import { rozenitePlugin } from '@rozenite/vite-plugin';
 
@@ -19,7 +18,6 @@ export default defineConfig({
           if (id.includes('event-source.ts')) {
             return 'event-source';
           }
-
           return undefined;
         },
       },

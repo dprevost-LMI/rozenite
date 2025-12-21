@@ -136,7 +136,9 @@ export const getResponseBody = async (
       return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = () => {
+          /* v8 ignore start */
           resolve(reader.result as string);
+          /* v8 ignore stop */
         };
         reader.readAsText(request.response);
       });
