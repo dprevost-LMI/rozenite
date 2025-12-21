@@ -44,8 +44,6 @@ export const getHTTPInspector = (): HTTPInspector => {
   
   return {
     enable: () => {
-      if (XHRInterceptor.isInterceptorEnabled()) return;
-
       XHRInterceptor.disableInterception();
 
       XHRInterceptor.setSendCallback((data, request) => {

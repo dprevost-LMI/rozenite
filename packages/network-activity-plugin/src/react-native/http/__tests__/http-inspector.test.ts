@@ -100,14 +100,6 @@ describe('HTTPInspector', () => {
     expect(XHRInterceptor.enableInterception).toHaveBeenCalled();
   });
 
-  it('should not enable interception if already enabled', () => {
-    vi.mocked(XHRInterceptor.isInterceptorEnabled).mockReturnValue(true);
-
-    inspector.enable();
-
-    expect(XHRInterceptor.enableInterception).not.toHaveBeenCalled();
-  });
-
   it('should handle missing response headers', () => {
     const listener = vi.fn();
     inspector.on('response-received', listener);

@@ -6,9 +6,9 @@ import * as configModule from '../config';
 import * as httpInspectorModule from '../useHttpInspector';
 import * as webSocketInspectorModule from '../useWebSocketInspector';
 import * as sseInspectorModule from '../useSSEInspector';
-import * as withOnBootModule from '../withOnBootNetworkActivityRecording';
 import * as httpInspector from '../http/http-inspector';
 import * as websocketInspector from '../websocket/websocket-inspector';
+import * as sseInspector from '../sse/sse-inspector';
 
 // Mock all dependencies using vi.hoisted to ensure they're available during mocking
 const mockUseRozeniteDevToolsClient = vi.hoisted(() => vi.fn(() => null));
@@ -59,7 +59,7 @@ vi.mock('../config', async () => {
   };
 });
 
-vi.mock('../withOnBootNetworkActivityRecording', () => ({
+vi.mock('../boot-recording', () => ({
   createNetworkInspectorsConfiguration: vi.fn(() => mockInspectorsConfig),
 }));
 
@@ -77,18 +77,20 @@ vi.mock('../useSSEInspector', () => ({
 
 vi.mock('../http/http-inspector', () => ({
   isHttpEvent: vi.fn((type: string) =>
-    ['request-sent', 'response-received', 'request-completed'].includes(type)
+    ['request-sent', 'response-received', 'request-completed'].includes(type),
   ),
 }));
 
 vi.mock('../websocket/websocket-inspector', () => ({
   isWebSocketEvent: vi.fn((type: string) =>
-    ['websocket-opened', 'websocket-closed'].includes(type)
+    ['websocket-opened', 'websocket-closed'].includes(type),
   ),
 }));
 
 vi.mock('../sse/sse-inspector', () => ({
-  isSSEEvent: vi.fn((type: string) => ['sse-opened', 'sse-closed'].includes(type)),
+  isSSEEvent: vi.fn((type: string) =>
+    ['sse-opened', 'sse-closed'].includes(type),
+  ),
 }));
 
 import { createMockClient } from './test-utils';
@@ -136,29 +138,33 @@ describe('useNetworkActivityDevTools', () => {
 
     it('should not setup when client is null', () => {
       mockUseRozeniteDevToolsClient.mockReturnValue(null);
+      const validateConfig = vi.mocked(configModule.validateConfig);
 
       renderHook(() => useNetworkActivityDevTools());
 
       expect(mockClient.onMessage).not.toHaveBeenCalled();
+      expect(validateConfig).not.toHaveBeenCalled();
     });
   });
 
   describe('inspector hooks integration', () => {
     it('should call useHttpInspector with correct parameters', () => {
       const useHttpInspector = vi.mocked(httpInspectorModule.useHttpInspector);
-      
+
       renderHook(() => useNetworkActivityDevTools());
 
       expect(useHttpInspector).toHaveBeenCalledWith(
         mockClient,
         mockInspectorsConfig.networkInspector.http,
         true, // default enabled
-        false // initial recording state
+        false, // initial recording state
       );
     });
 
     it('should call useWebSocketInspector with correct parameters', () => {
-      const useWebSocketInspector = vi.mocked(webSocketInspectorModule.useWebSocketInspector);
+      const useWebSocketInspector = vi.mocked(
+        webSocketInspectorModule.useWebSocketInspector,
+      );
 
       renderHook(() => useNetworkActivityDevTools());
 
@@ -166,7 +172,7 @@ describe('useNetworkActivityDevTools', () => {
         mockClient,
         mockInspectorsConfig.networkInspector.websocket,
         true, // default enabled
-        false // initial recording state
+        false, // initial recording state
       );
     });
 
@@ -179,13 +185,15 @@ describe('useNetworkActivityDevTools', () => {
         mockClient,
         mockInspectorsConfig.networkInspector.sse,
         true, // default enabled
-        false // initial recording state
+        false, // initial recording state
       );
     });
 
     it('should respect inspector config settings', () => {
       const useHttpInspector = vi.mocked(httpInspectorModule.useHttpInspector);
-      const useWebSocketInspector = vi.mocked(webSocketInspectorModule.useWebSocketInspector);
+      const useWebSocketInspector = vi.mocked(
+        webSocketInspectorModule.useWebSocketInspector,
+      );
       const useSSEInspector = vi.mocked(sseInspectorModule.useSSEInspector);
 
       const config: NetworkActivityDevToolsConfig = {
@@ -202,19 +210,19 @@ describe('useNetworkActivityDevTools', () => {
         expect.anything(),
         expect.anything(),
         false, // disabled
-        expect.anything()
+        expect.anything(),
       );
       expect(useWebSocketInspector).toHaveBeenCalledWith(
         expect.anything(),
         expect.anything(),
         true, // enabled
-        expect.anything()
+        expect.anything(),
       );
       expect(useSSEInspector).toHaveBeenCalledWith(
         expect.anything(),
         expect.anything(),
         false, // disabled
-        expect.anything()
+        expect.anything(),
       );
     });
   });
@@ -228,7 +236,7 @@ describe('useNetworkActivityDevTools', () => {
       // We can't directly test ref value, but subsequent re-renders would use it
       expect(mockClient.onMessage).toHaveBeenCalledWith(
         'network-enable',
-        expect.any(Function)
+        expect.any(Function),
       );
     });
 
@@ -239,13 +247,13 @@ describe('useNetworkActivityDevTools', () => {
 
       expect(mockInspectorsConfig.eventsListener.connect).toHaveBeenCalledWith(
         mockClient.send,
-        expect.any(Function)
+        expect.any(Function),
       );
     });
 
     it('should filter events based on inspector configuration', () => {
       const config: NetworkActivityDevToolsConfig = {
-        inspectors: { http: false, websocket: true, sse: true },
+        inspectors: { http: false, websocket: true, sse: false },
       };
 
       renderHook(() => useNetworkActivityDevTools(config));
@@ -253,7 +261,8 @@ describe('useNetworkActivityDevTools', () => {
       (mockClient as any).triggerMessage('network-enable');
 
       // Get the filter function that was passed to connect
-      const filterFn = mockInspectorsConfig.eventsListener.connect.mock.calls[0][1];
+      const filterFn =
+        mockInspectorsConfig.eventsListener.connect.mock.calls[0][1];
 
       // Test HTTP event (should be filtered out)
       const isHttpEvent = vi.mocked(httpInspector.isHttpEvent);
@@ -265,6 +274,12 @@ describe('useNetworkActivityDevTools', () => {
       const isWebSocketEvent = vi.mocked(websocketInspector.isWebSocketEvent);
       isWebSocketEvent.mockReturnValue(true);
       expect(filterFn({ type: 'websocket-opened' })).toBe(true);
+
+      // Test unknown event (should pass through by default)
+      isWebSocketEvent.mockReturnValue(false);
+      const isSSEEvent = vi.mocked(sseInspector.isSSEEvent);
+      isSSEEvent.mockReturnValue(false);
+      expect(filterFn({ type: 'unknown-event' })).toBe(true);
     });
   });
 
@@ -276,7 +291,7 @@ describe('useNetworkActivityDevTools', () => {
 
       expect(mockClient.onMessage).toHaveBeenCalledWith(
         'network-disable',
-        expect.any(Function)
+        expect.any(Function),
       );
     });
   });
@@ -353,7 +368,7 @@ describe('useNetworkActivityDevTools', () => {
 
       const { rerender } = renderHook(
         ({ config }) => useNetworkActivityDevTools(config),
-        { initialProps: { config: config1 } }
+        { initialProps: { config: config1 } },
       );
 
       const initialCallCount = mockClient.onMessage.mock.calls.length;
@@ -362,7 +377,7 @@ describe('useNetworkActivityDevTools', () => {
 
       // Should have setup new subscriptions
       expect(mockClient.onMessage.mock.calls.length).toBeGreaterThan(
-        initialCallCount
+        initialCallCount,
       );
     });
   });
@@ -370,12 +385,14 @@ describe('useNetworkActivityDevTools', () => {
   describe('edge cases', () => {
     it('should handle partial inspector config', () => {
       const config: NetworkActivityDevToolsConfig = {
-        inspectors: { http: false },
-        // websocket and sse should default to true
+        inspectors: { http: false, sse: false },
+        // websocket should default to true
       };
 
       const useHttpInspector = vi.mocked(httpInspectorModule.useHttpInspector);
-      const useWebSocketInspector = vi.mocked(webSocketInspectorModule.useWebSocketInspector);
+      const useWebSocketInspector = vi.mocked(
+        webSocketInspectorModule.useWebSocketInspector,
+      );
       const useSSEInspector = vi.mocked(sseInspectorModule.useSSEInspector);
 
       renderHook(() => useNetworkActivityDevTools(config));
@@ -384,19 +401,19 @@ describe('useNetworkActivityDevTools', () => {
         expect.anything(),
         expect.anything(),
         false,
-        expect.anything()
+        expect.anything(),
       );
       expect(useWebSocketInspector).toHaveBeenCalledWith(
         expect.anything(),
         expect.anything(),
         true,
-        expect.anything()
+        expect.anything(),
       );
       expect(useSSEInspector).toHaveBeenCalledWith(
         expect.anything(),
         expect.anything(),
-        true,
-        expect.anything()
+        false,
+        expect.anything(),
       );
     });
 
@@ -410,7 +427,7 @@ describe('useNetworkActivityDevTools', () => {
         expect.anything(),
         expect.anything(),
         true,
-        expect.anything()
+        expect.anything(),
       );
     });
   });
