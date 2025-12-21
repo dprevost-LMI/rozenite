@@ -275,9 +275,13 @@ describe('useNetworkActivityDevTools', () => {
       isWebSocketEvent.mockReturnValue(true);
       expect(filterFn({ type: 'websocket-opened' })).toBe(true);
 
-      // Test unknown event (should pass through by default)
+      // Test SSE event (should be filtered out)
       isWebSocketEvent.mockReturnValue(false);
       const isSSEEvent = vi.mocked(sseInspector.isSSEEvent);
+      isSSEEvent.mockReturnValue(true);
+      expect(filterFn({ type: 'sse-opened' })).toBe(false);
+
+      // Test unknown event (should pass through by default)
       isSSEEvent.mockReturnValue(false);
       expect(filterFn({ type: 'unknown-event' })).toBe(true);
     });

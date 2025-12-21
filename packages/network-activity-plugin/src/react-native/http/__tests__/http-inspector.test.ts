@@ -389,6 +389,14 @@ describe('isHttpEvent', () => {
     
     unsubscribe();
   });
+
+  it('should dispose correctly', () => {
+    const inspector = getHTTPInspector();
+    inspector.dispose();
+    
+    expect(XHRInterceptor.disableInterception).toHaveBeenCalled();
+    expect(getNetworkRequestsRegistry().clear).toHaveBeenCalled();
+  });
 });
 
 describe('Override Callback', () => {

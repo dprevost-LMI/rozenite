@@ -153,4 +153,13 @@ describe('NetworkInspector', () => {
       expect(mockWebsocketInspector.dispose).toHaveBeenCalled();
     });
   });
+
+  describe('getNetworkInspector', () => {
+    it('should return a singleton instance', () => {
+      const instance1 = getNetworkInspector();
+      const instance2 = getNetworkInspector();
+      expect(instance1).toBe(instance2);
+      expect(instance1).toBeInstanceOf(NetworkInspector);
+    });
+  });
 });

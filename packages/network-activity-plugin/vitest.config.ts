@@ -48,12 +48,7 @@ export default defineConfig({
         functions: 26,
         branches: 55,
         statements: 4,
-        'src/react-native/useHttpInspector.ts': FULL_COVERAGE_THRESHOLD,
-        'src/react-native/useSSEInspector.ts': FULL_COVERAGE_THRESHOLD,
-        'src/react-native/useWebSocketInspector.ts': FULL_COVERAGE_THRESHOLD,
-        'src/react-native/http/**': FULL_COVERAGE_THRESHOLD,
-        'src/react-native/sse/**': FULL_COVERAGE_THRESHOLD,
-        'src/react-native/websocket/**': FULL_COVERAGE_THRESHOLD,
+        'src/react-native/**': FULL_COVERAGE_THRESHOLD,
       },
     },
     server: {

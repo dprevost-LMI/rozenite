@@ -13,9 +13,14 @@ const MOCK_EVENT_SOURCE = class {
   removeAllEventListeners = NOOP;
 };
 
+// Exported for testing
+export const utils = {
+  requireEventSource: () => require('react-native-sse'),
+};
+
 export const getEventSource = (): typeof EventSource => {
   try {
-    const { default: EventSource } = require('react-native-sse');
+    const { default: EventSource } = utils.requireEventSource();
     return EventSource;
   } catch {
     // This is a workaround for the fact that Vite doesn't support require() calls for in-project dependencies.

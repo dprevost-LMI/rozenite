@@ -1,6 +1,27 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createNanoEvents } from 'nanoevents';
 import { getWebSocketInspector, isWebSocketEvent } from '../websocket-inspector';
 import { getWebSocketInterceptor } from '../websocket-interceptor';
+
+// Mock nanoevents to inspect the events object
+vi.mock('nanoevents', () => ({
+  createNanoEvents: vi.fn(() => {
+    const emitter: any = {
+      events: {},
+      emit(event: string, ...args: any[]) {
+        (this.events[event] || []).forEach((cb: any) => cb(...args));
+      },
+      on(event: string, cb: any) {
+        if (!this.events[event]) this.events[event] = [];
+        this.events[event].push(cb);
+        return () => {
+          this.events[event] = this.events[event].filter((i: any) => i !== cb);
+        };
+      }
+    };
+    return emitter;
+  }),
+}));
 
 // Mock getWebSocketInterceptor
 vi.mock('../websocket-interceptor', () => ({
@@ -392,5 +413,23 @@ describe('WebSocketInspector', () => {
     inspector.dispose();
 
     expect(mockInterceptor.disableInterception).toHaveBeenCalled();
+  });
+
+  it('Ensure eventEmitter.events is kept to work with hot reload when changing config flag from false to true', () => {
+    const inspector = getWebSocketInspector();
+    
+    // Add a listener to populate events
+    inspector.on('websocket-open', () => {
+      // noop
+    });
+    
+    // Get the emitter instance from the mock
+    const emitter = vi.mocked(createNanoEvents).mock.results[0].value;
+    expect(emitter.events['websocket-open']).toHaveLength(1);
+
+    inspector.dispose();
+    
+    // Verify events are NOT cleared
+    expect(emitter.events['websocket-open']).toHaveLength(1);
   });
 });
