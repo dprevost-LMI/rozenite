@@ -18,7 +18,7 @@ export default defineConfig({
         find: 'react-native/Libraries/WebSocket/WebSocketInterceptor',
         replacement: path.resolve(
           __dirname,
-          '__mocks__/react-native/Libraries/WebSocket/WebSocketInterceptor.ts'
+          '__mocks__/react-native/Libraries/WebSocket/WebSocketInterceptor.ts',
         ),
       },
       {

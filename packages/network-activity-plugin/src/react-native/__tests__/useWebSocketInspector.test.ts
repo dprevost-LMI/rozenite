@@ -20,7 +20,7 @@ describe('useWebSocketInspector', () => {
   describe('initialization', () => {
     it('should not setup subscriptions when client is null', () => {
       renderHook(() =>
-        useWebSocketInspector(null, mockWebSocketInspector, true, false)
+        useWebSocketInspector(null, mockWebSocketInspector, true, false),
       );
 
       expect(mockClient.onMessage).not.toHaveBeenCalled();
@@ -29,7 +29,7 @@ describe('useWebSocketInspector', () => {
 
     it('should not setup subscriptions when isEnabled is false', () => {
       renderHook(() =>
-        useWebSocketInspector(mockClient, mockWebSocketInspector, false, false)
+        useWebSocketInspector(mockClient, mockWebSocketInspector, false, false),
       );
 
       expect(mockClient.onMessage).not.toHaveBeenCalled();
@@ -38,22 +38,22 @@ describe('useWebSocketInspector', () => {
 
     it('should setup subscriptions when client and isEnabled are truthy', () => {
       renderHook(() =>
-        useWebSocketInspector(mockClient, mockWebSocketInspector, true, false)
+        useWebSocketInspector(mockClient, mockWebSocketInspector, true, false),
       );
 
       expect(mockClient.onMessage).toHaveBeenCalledWith(
         'network-enable',
-        expect.any(Function)
+        expect.any(Function),
       );
       expect(mockClient.onMessage).toHaveBeenCalledWith(
         'network-disable',
-        expect.any(Function)
+        expect.any(Function),
       );
     });
 
     it('should enable inspector on mount when recording is enabled', () => {
       renderHook(() =>
-        useWebSocketInspector(mockClient, mockWebSocketInspector, true, true)
+        useWebSocketInspector(mockClient, mockWebSocketInspector, true, true),
       );
 
       expect(mockWebSocketInspector.enable).toHaveBeenCalledTimes(1);
@@ -61,7 +61,7 @@ describe('useWebSocketInspector', () => {
 
     it('should not enable inspector on mount when recording is disabled', () => {
       renderHook(() =>
-        useWebSocketInspector(mockClient, mockWebSocketInspector, true, false)
+        useWebSocketInspector(mockClient, mockWebSocketInspector, true, false),
       );
 
       expect(mockWebSocketInspector.enable).not.toHaveBeenCalled();
@@ -71,7 +71,7 @@ describe('useWebSocketInspector', () => {
   describe('network-enable message', () => {
     it('should enable inspector when network-enable message is received', () => {
       renderHook(() =>
-        useWebSocketInspector(mockClient, mockWebSocketInspector, true, false)
+        useWebSocketInspector(mockClient, mockWebSocketInspector, true, false),
       );
 
       (mockClient as any).triggerMessage('network-enable');
@@ -81,7 +81,7 @@ describe('useWebSocketInspector', () => {
 
     it('should handle multiple enable calls', () => {
       renderHook(() =>
-        useWebSocketInspector(mockClient, mockWebSocketInspector, true, false)
+        useWebSocketInspector(mockClient, mockWebSocketInspector, true, false),
       );
 
       (mockClient as any).triggerMessage('network-enable');
@@ -95,7 +95,7 @@ describe('useWebSocketInspector', () => {
   describe('network-disable message', () => {
     it('should disable inspector when network-disable message is received', () => {
       renderHook(() =>
-        useWebSocketInspector(mockClient, mockWebSocketInspector, true, false)
+        useWebSocketInspector(mockClient, mockWebSocketInspector, true, false),
       );
 
       (mockClient as any).triggerMessage('network-disable');
@@ -105,7 +105,7 @@ describe('useWebSocketInspector', () => {
 
     it('should handle multiple disable calls', () => {
       renderHook(() =>
-        useWebSocketInspector(mockClient, mockWebSocketInspector, true, false)
+        useWebSocketInspector(mockClient, mockWebSocketInspector, true, false),
       );
 
       (mockClient as any).triggerMessage('network-disable');
@@ -118,7 +118,7 @@ describe('useWebSocketInspector', () => {
   describe('cleanup', () => {
     it('should dispose inspector and remove subscriptions on unmount', () => {
       const { unmount } = renderHook(() =>
-        useWebSocketInspector(mockClient, mockWebSocketInspector, true, false)
+        useWebSocketInspector(mockClient, mockWebSocketInspector, true, false),
       );
 
       unmount();
@@ -133,9 +133,9 @@ describe('useWebSocketInspector', () => {
             mockClient,
             mockWebSocketInspector,
             enabled,
-            false
+            false,
           ),
-        { initialProps: { enabled: true } }
+        { initialProps: { enabled: true } },
       );
 
       expect(mockWebSocketInspector.dispose).not.toHaveBeenCalled();
@@ -152,7 +152,7 @@ describe('useWebSocketInspector', () => {
       const { rerender } = renderHook(
         ({ client }: { client: ReturnType<typeof createMockClient> }) =>
           useWebSocketInspector(client, mockWebSocketInspector, true, false),
-        { initialProps: { client: mockClient } }
+        { initialProps: { client: mockClient } },
       );
 
       expect(mockWebSocketInspector.dispose).not.toHaveBeenCalled();
@@ -167,7 +167,7 @@ describe('useWebSocketInspector', () => {
   describe('hot reload support', () => {
     it('should re-enable inspector on mount when recording was previously enabled', () => {
       renderHook(() =>
-        useWebSocketInspector(mockClient, mockWebSocketInspector, true, true)
+        useWebSocketInspector(mockClient, mockWebSocketInspector, true, true),
       );
 
       expect(mockWebSocketInspector.enable).toHaveBeenCalledTimes(1);
@@ -175,7 +175,7 @@ describe('useWebSocketInspector', () => {
 
     it('should handle enable/disable cycles correctly', () => {
       renderHook(() =>
-        useWebSocketInspector(mockClient, mockWebSocketInspector, true, false)
+        useWebSocketInspector(mockClient, mockWebSocketInspector, true, false),
       );
 
       // Simulate enable/disable cycle
@@ -195,9 +195,12 @@ describe('useWebSocketInspector', () => {
       const newMockWebSocketInspector = createMockWebSocketInspector();
 
       const { rerender } = renderHook(
-        ({ inspector }: { inspector: ReturnType<typeof createMockWebSocketInspector> }) =>
-          useWebSocketInspector(mockClient, inspector, true, false),
-        { initialProps: { inspector: mockWebSocketInspector } }
+        ({
+          inspector,
+        }: {
+          inspector: ReturnType<typeof createMockWebSocketInspector>;
+        }) => useWebSocketInspector(mockClient, inspector, true, false),
+        { initialProps: { inspector: mockWebSocketInspector } },
       );
 
       expect(mockWebSocketInspector.dispose).not.toHaveBeenCalled();
@@ -217,9 +220,9 @@ describe('useWebSocketInspector', () => {
             mockClient,
             mockWebSocketInspector,
             true,
-            recording
+            recording,
           ),
-        { initialProps: { recording: false } }
+        { initialProps: { recording: false } },
       );
 
       expect(mockWebSocketInspector.enable).not.toHaveBeenCalled();

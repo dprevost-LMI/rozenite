@@ -16,10 +16,10 @@ describe('EventsListener', () => {
     const listener = createEventsListener<TestEventMap>();
     listener.enableQueuing();
 
-    // We can't inspect the queue directly as it's private, 
+    // We can't inspect the queue directly as it's private,
     // but we can verify behavior when connecting later.
     listener.send('test-event', { data: 'hello' });
-    
+
     // Should be in queue mode
     expect(listener.isInQueueMode()).toBe(true);
   });
@@ -80,7 +80,7 @@ describe('EventsListener', () => {
   it('should not send if not connected and not queuing', () => {
     const listener = createEventsListener<TestEventMap>();
     // Not enabling queuing
-    
+
     // This should do nothing
     listener.send('test-event', { data: 'lost' });
 
@@ -89,11 +89,11 @@ describe('EventsListener', () => {
 
     expect(sendFn).not.toHaveBeenCalled();
   });
-  
+
   it('should handle flush when sendFunction is not set (defensive)', () => {
-      const listener = createEventsListener<TestEventMap>();
-      // @ts-expect-error - Accessing private method for testing defensive coding
-      listener.flushQueue();
-      // Should not throw
+    const listener = createEventsListener<TestEventMap>();
+    // @ts-expect-error - Accessing private method for testing defensive coding
+    listener.flushQueue();
+    // Should not throw
   });
 });

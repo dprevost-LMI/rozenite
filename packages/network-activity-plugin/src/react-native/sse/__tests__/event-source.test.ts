@@ -50,7 +50,7 @@ describe('getEventSource', () => {
 
     // Verify it's the mock class (no constructor args needed)
     const instance = new (EventSource as any)();
-    
+
     expect(instance.open).toBeDefined();
     expect(() => instance.open()).not.toThrow();
 

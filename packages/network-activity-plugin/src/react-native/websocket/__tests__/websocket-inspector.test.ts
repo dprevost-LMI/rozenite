@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createNanoEvents } from 'nanoevents';
-import { getWebSocketInspector, isWebSocketEvent } from '../websocket-inspector';
+import {
+  getWebSocketInspector,
+  isWebSocketEvent,
+} from '../websocket-inspector';
 import { getWebSocketInterceptor } from '../websocket-interceptor';
 
 // Mock nanoevents to inspect the events object
@@ -17,7 +20,7 @@ vi.mock('nanoevents', () => ({
         return () => {
           this.events[event] = this.events[event].filter((i: any) => i !== cb);
         };
-      }
+      },
     };
     return emitter;
   }),
@@ -101,55 +104,63 @@ describe('WebSocketInspector', () => {
     const inspector = getWebSocketInspector();
     const listener = vi.fn();
     inspector.on('websocket-connect', listener);
-    
+
     vi.mocked(mockInterceptor.isInterceptorEnabled).mockReturnValue(false);
     inspector.enable();
 
-    const callback = vi.mocked(mockInterceptor.setConnectCallback).mock.calls[0][0];
+    const callback = vi.mocked(mockInterceptor.setConnectCallback).mock
+      .calls[0][0];
     callback('ws://test.com', ['protocol'], ['option'], 123);
 
-    expect(listener).toHaveBeenCalledWith(expect.objectContaining({
-      type: 'websocket-connect',
-      url: 'ws://test.com',
-      socketId: 123,
-      protocols: ['protocol'],
-      options: ['option'],
-    }));
+    expect(listener).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'websocket-connect',
+        url: 'ws://test.com',
+        socketId: 123,
+        protocols: ['protocol'],
+        options: ['option'],
+      }),
+    );
   });
 
   it('should emit websocket-close event via setCloseCallback', () => {
     const inspector = getWebSocketInspector();
     const listener = vi.fn();
     inspector.on('websocket-close', listener);
-    
+
     vi.mocked(mockInterceptor.isInterceptorEnabled).mockReturnValue(false);
     inspector.enable();
 
     // First connect to set the URL in the map
-    const connectCallback = vi.mocked(mockInterceptor.setConnectCallback).mock.calls[0][0];
+    const connectCallback = vi.mocked(mockInterceptor.setConnectCallback).mock
+      .calls[0][0];
     connectCallback('ws://test.com', [], [], 123);
 
-    const closeCallback = vi.mocked(mockInterceptor.setCloseCallback).mock.calls[0][0];
+    const closeCallback = vi.mocked(mockInterceptor.setCloseCallback).mock
+      .calls[0][0];
     closeCallback(1000, 'Normal Closure', 123);
 
-    expect(listener).toHaveBeenCalledWith(expect.objectContaining({
-      type: 'websocket-close',
-      url: 'ws://test.com',
-      socketId: 123,
-      code: 1000,
-      reason: 'Normal Closure',
-    }));
+    expect(listener).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'websocket-close',
+        url: 'ws://test.com',
+        socketId: 123,
+        code: 1000,
+        reason: 'Normal Closure',
+      }),
+    );
   });
 
   it('should not emit websocket-close event via setCloseCallback if url is missing', () => {
     const inspector = getWebSocketInspector();
     const listener = vi.fn();
     inspector.on('websocket-close', listener);
-    
+
     vi.mocked(mockInterceptor.isInterceptorEnabled).mockReturnValue(false);
     inspector.enable();
 
-    const closeCallback = vi.mocked(mockInterceptor.setCloseCallback).mock.calls[0][0];
+    const closeCallback = vi.mocked(mockInterceptor.setCloseCallback).mock
+      .calls[0][0];
     closeCallback(1000, 'Normal Closure', 999); // Unknown socketId
 
     expect(listener).not.toHaveBeenCalled();
@@ -159,105 +170,122 @@ describe('WebSocketInspector', () => {
     const inspector = getWebSocketInspector();
     const listener = vi.fn();
     inspector.on('websocket-message-received', listener);
-    
+
     vi.mocked(mockInterceptor.isInterceptorEnabled).mockReturnValue(false);
     inspector.enable();
 
-    const connectCallback = vi.mocked(mockInterceptor.setConnectCallback).mock.calls[0][0];
+    const connectCallback = vi.mocked(mockInterceptor.setConnectCallback).mock
+      .calls[0][0];
     connectCallback('ws://test.com', [], [], 123);
 
-    const messageCallback = vi.mocked(mockInterceptor.setOnMessageCallback).mock.calls[0][0];
+    const messageCallback = vi.mocked(mockInterceptor.setOnMessageCallback).mock
+      .calls[0][0];
     messageCallback('hello', 123);
 
-    expect(listener).toHaveBeenCalledWith(expect.objectContaining({
-      type: 'websocket-message-received',
-      url: 'ws://test.com',
-      socketId: 123,
-      data: 'hello',
-      messageType: 'text',
-    }));
+    expect(listener).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'websocket-message-received',
+        url: 'ws://test.com',
+        socketId: 123,
+        data: 'hello',
+        messageType: 'text',
+      }),
+    );
   });
 
   it('should emit websocket-close event with default code and reason', () => {
     const inspector = getWebSocketInspector();
     const listener = vi.fn();
     inspector.on('websocket-close', listener);
-    
+
     vi.mocked(mockInterceptor.isInterceptorEnabled).mockReturnValue(false);
     inspector.enable();
 
-    const connectCallback = vi.mocked(mockInterceptor.setConnectCallback).mock.calls[0][0];
+    const connectCallback = vi.mocked(mockInterceptor.setConnectCallback).mock
+      .calls[0][0];
     connectCallback('ws://test.com', [], [], 123);
 
-    const closeCallback = vi.mocked(mockInterceptor.setCloseCallback).mock.calls[0][0];
+    const closeCallback = vi.mocked(mockInterceptor.setCloseCallback).mock
+      .calls[0][0];
     closeCallback(null, null, 123);
 
-    expect(listener).toHaveBeenCalledWith(expect.objectContaining({
-      type: 'websocket-close',
-      url: 'ws://test.com',
-      socketId: 123,
-      code: 0,
-      reason: undefined,
-    }));
+    expect(listener).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'websocket-close',
+        url: 'ws://test.com',
+        socketId: 123,
+        code: 0,
+        reason: undefined,
+      }),
+    );
   });
 
   it('should emit websocket-message-received event with binary data', () => {
     const inspector = getWebSocketInspector();
     const listener = vi.fn();
     inspector.on('websocket-message-received', listener);
-    
+
     vi.mocked(mockInterceptor.isInterceptorEnabled).mockReturnValue(false);
     inspector.enable();
 
-    const connectCallback = vi.mocked(mockInterceptor.setConnectCallback).mock.calls[0][0];
+    const connectCallback = vi.mocked(mockInterceptor.setConnectCallback).mock
+      .calls[0][0];
     connectCallback('ws://test.com', [], [], 123);
 
-    const messageCallback = vi.mocked(mockInterceptor.setOnMessageCallback).mock.calls[0][0];
+    const messageCallback = vi.mocked(mockInterceptor.setOnMessageCallback).mock
+      .calls[0][0];
     const binaryData = new ArrayBuffer(8);
     messageCallback(binaryData, 123);
 
-    expect(listener).toHaveBeenCalledWith(expect.objectContaining({
-      type: 'websocket-message-received',
-      url: 'ws://test.com',
-      socketId: 123,
-      data: binaryData,
-      messageType: 'binary',
-    }));
+    expect(listener).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'websocket-message-received',
+        url: 'ws://test.com',
+        socketId: 123,
+        data: binaryData,
+        messageType: 'binary',
+      }),
+    );
   });
 
   it('should emit websocket-message-sent event with binary data', () => {
     const inspector = getWebSocketInspector();
     const listener = vi.fn();
     inspector.on('websocket-message-sent', listener);
-    
+
     vi.mocked(mockInterceptor.isInterceptorEnabled).mockReturnValue(false);
     inspector.enable();
 
-    const connectCallback = vi.mocked(mockInterceptor.setConnectCallback).mock.calls[0][0];
+    const connectCallback = vi.mocked(mockInterceptor.setConnectCallback).mock
+      .calls[0][0];
     connectCallback('ws://test.com', [], [], 123);
 
-    const sendCallback = vi.mocked(mockInterceptor.setSendCallback).mock.calls[0][0];
+    const sendCallback = vi.mocked(mockInterceptor.setSendCallback).mock
+      .calls[0][0];
     const binaryData = new ArrayBuffer(8);
     sendCallback(binaryData, 123);
 
-    expect(listener).toHaveBeenCalledWith(expect.objectContaining({
-      type: 'websocket-message-sent',
-      url: 'ws://test.com',
-      socketId: 123,
-      data: binaryData,
-      messageType: 'binary',
-    }));
+    expect(listener).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'websocket-message-sent',
+        url: 'ws://test.com',
+        socketId: 123,
+        data: binaryData,
+        messageType: 'binary',
+      }),
+    );
   });
 
   it('should not emit websocket-message-received event if url is missing', () => {
     const inspector = getWebSocketInspector();
     const listener = vi.fn();
     inspector.on('websocket-message-received', listener);
-    
+
     vi.mocked(mockInterceptor.isInterceptorEnabled).mockReturnValue(false);
     inspector.enable();
 
-    const messageCallback = vi.mocked(mockInterceptor.setOnMessageCallback).mock.calls[0][0];
+    const messageCallback = vi.mocked(mockInterceptor.setOnMessageCallback).mock
+      .calls[0][0];
     messageCallback('hello', 999);
 
     expect(listener).not.toHaveBeenCalled();
@@ -267,33 +295,38 @@ describe('WebSocketInspector', () => {
     const inspector = getWebSocketInspector();
     const listener = vi.fn();
     inspector.on('websocket-error', listener);
-    
+
     vi.mocked(mockInterceptor.isInterceptorEnabled).mockReturnValue(false);
     inspector.enable();
 
-    const connectCallback = vi.mocked(mockInterceptor.setConnectCallback).mock.calls[0][0];
+    const connectCallback = vi.mocked(mockInterceptor.setConnectCallback).mock
+      .calls[0][0];
     connectCallback('ws://test.com', [], [], 123);
 
-    const errorCallback = vi.mocked(mockInterceptor.setOnErrorCallback).mock.calls[0][0];
+    const errorCallback = vi.mocked(mockInterceptor.setOnErrorCallback).mock
+      .calls[0][0];
     errorCallback('error message', 123);
 
-    expect(listener).toHaveBeenCalledWith(expect.objectContaining({
-      type: 'websocket-error',
-      url: 'ws://test.com',
-      socketId: 123,
-      error: 'error message',
-    }));
+    expect(listener).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'websocket-error',
+        url: 'ws://test.com',
+        socketId: 123,
+        error: 'error message',
+      }),
+    );
   });
 
   it('should not emit websocket-error event if url is missing', () => {
     const inspector = getWebSocketInspector();
     const listener = vi.fn();
     inspector.on('websocket-error', listener);
-    
+
     vi.mocked(mockInterceptor.isInterceptorEnabled).mockReturnValue(false);
     inspector.enable();
 
-    const errorCallback = vi.mocked(mockInterceptor.setOnErrorCallback).mock.calls[0][0];
+    const errorCallback = vi.mocked(mockInterceptor.setOnErrorCallback).mock
+      .calls[0][0];
     errorCallback('error message', 999);
 
     expect(listener).not.toHaveBeenCalled();
@@ -303,34 +336,39 @@ describe('WebSocketInspector', () => {
     const inspector = getWebSocketInspector();
     const listener = vi.fn();
     inspector.on('websocket-message-sent', listener);
-    
+
     vi.mocked(mockInterceptor.isInterceptorEnabled).mockReturnValue(false);
     inspector.enable();
 
-    const connectCallback = vi.mocked(mockInterceptor.setConnectCallback).mock.calls[0][0];
+    const connectCallback = vi.mocked(mockInterceptor.setConnectCallback).mock
+      .calls[0][0];
     connectCallback('ws://test.com', [], [], 123);
 
-    const sendCallback = vi.mocked(mockInterceptor.setSendCallback).mock.calls[0][0];
+    const sendCallback = vi.mocked(mockInterceptor.setSendCallback).mock
+      .calls[0][0];
     sendCallback('sent data', 123);
 
-    expect(listener).toHaveBeenCalledWith(expect.objectContaining({
-      type: 'websocket-message-sent',
-      url: 'ws://test.com',
-      socketId: 123,
-      data: 'sent data',
-      messageType: 'text',
-    }));
+    expect(listener).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'websocket-message-sent',
+        url: 'ws://test.com',
+        socketId: 123,
+        data: 'sent data',
+        messageType: 'text',
+      }),
+    );
   });
 
   it('should not emit websocket-message-sent event if url is missing', () => {
     const inspector = getWebSocketInspector();
     const listener = vi.fn();
     inspector.on('websocket-message-sent', listener);
-    
+
     vi.mocked(mockInterceptor.isInterceptorEnabled).mockReturnValue(false);
     inspector.enable();
 
-    const sendCallback = vi.mocked(mockInterceptor.setSendCallback).mock.calls[0][0];
+    const sendCallback = vi.mocked(mockInterceptor.setSendCallback).mock
+      .calls[0][0];
     sendCallback('sent data', 999);
 
     expect(listener).not.toHaveBeenCalled();
@@ -340,32 +378,37 @@ describe('WebSocketInspector', () => {
     const inspector = getWebSocketInspector();
     const listener = vi.fn();
     inspector.on('websocket-open', listener);
-    
+
     vi.mocked(mockInterceptor.isInterceptorEnabled).mockReturnValue(false);
     inspector.enable();
 
-    const connectCallback = vi.mocked(mockInterceptor.setConnectCallback).mock.calls[0][0];
+    const connectCallback = vi.mocked(mockInterceptor.setConnectCallback).mock
+      .calls[0][0];
     connectCallback('ws://test.com', [], [], 123);
 
-    const openCallback = vi.mocked(mockInterceptor.setOnOpenCallback).mock.calls[0][0];
+    const openCallback = vi.mocked(mockInterceptor.setOnOpenCallback).mock
+      .calls[0][0];
     openCallback(123);
 
-    expect(listener).toHaveBeenCalledWith(expect.objectContaining({
-      type: 'websocket-open',
-      url: 'ws://test.com',
-      socketId: 123,
-    }));
+    expect(listener).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'websocket-open',
+        url: 'ws://test.com',
+        socketId: 123,
+      }),
+    );
   });
 
   it('should not emit websocket-open event if url is missing', () => {
     const inspector = getWebSocketInspector();
     const listener = vi.fn();
     inspector.on('websocket-open', listener);
-    
+
     vi.mocked(mockInterceptor.isInterceptorEnabled).mockReturnValue(false);
     inspector.enable();
 
-    const openCallback = vi.mocked(mockInterceptor.setOnOpenCallback).mock.calls[0][0];
+    const openCallback = vi.mocked(mockInterceptor.setOnOpenCallback).mock
+      .calls[0][0];
     openCallback(999);
 
     expect(listener).not.toHaveBeenCalled();
@@ -375,34 +418,39 @@ describe('WebSocketInspector', () => {
     const inspector = getWebSocketInspector();
     const listener = vi.fn();
     inspector.on('websocket-close', listener);
-    
+
     vi.mocked(mockInterceptor.isInterceptorEnabled).mockReturnValue(false);
     inspector.enable();
 
-    const connectCallback = vi.mocked(mockInterceptor.setConnectCallback).mock.calls[0][0];
+    const connectCallback = vi.mocked(mockInterceptor.setConnectCallback).mock
+      .calls[0][0];
     connectCallback('ws://test.com', [], [], 123);
 
-    const onCloseCallback = vi.mocked(mockInterceptor.setOnCloseCallback).mock.calls[0][0];
+    const onCloseCallback = vi.mocked(mockInterceptor.setOnCloseCallback).mock
+      .calls[0][0];
     onCloseCallback({ code: 1000, reason: 'Normal Closure' }, 123);
 
-    expect(listener).toHaveBeenCalledWith(expect.objectContaining({
-      type: 'websocket-close',
-      url: 'ws://test.com',
-      socketId: 123,
-      code: 1000,
-      reason: 'Normal Closure',
-    }));
+    expect(listener).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'websocket-close',
+        url: 'ws://test.com',
+        socketId: 123,
+        code: 1000,
+        reason: 'Normal Closure',
+      }),
+    );
   });
 
   it('should not emit websocket-close event via setOnCloseCallback if url is missing', () => {
     const inspector = getWebSocketInspector();
     const listener = vi.fn();
     inspector.on('websocket-close', listener);
-    
+
     vi.mocked(mockInterceptor.isInterceptorEnabled).mockReturnValue(false);
     inspector.enable();
 
-    const onCloseCallback = vi.mocked(mockInterceptor.setOnCloseCallback).mock.calls[0][0];
+    const onCloseCallback = vi.mocked(mockInterceptor.setOnCloseCallback).mock
+      .calls[0][0];
     onCloseCallback({ code: 1000, reason: 'Normal Closure' }, 999);
 
     expect(listener).not.toHaveBeenCalled();
@@ -417,18 +465,18 @@ describe('WebSocketInspector', () => {
 
   it('Ensure eventEmitter.events is kept to work with hot reload when changing config flag from false to true', () => {
     const inspector = getWebSocketInspector();
-    
+
     // Add a listener to populate events
     inspector.on('websocket-open', () => {
       // noop
     });
-    
+
     // Get the emitter instance from the mock
     const emitter = vi.mocked(createNanoEvents).mock.results[0].value;
     expect(emitter.events['websocket-open']).toHaveLength(1);
 
     inspector.dispose();
-    
+
     // Verify events are NOT cleared
     expect(emitter.events['websocket-open']).toHaveLength(1);
   });

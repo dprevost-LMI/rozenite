@@ -9,7 +9,7 @@ describe('XHRInterceptor', () => {
 
   beforeEach(async () => {
     vi.resetModules();
-    
+
     // Define MockXHR with methods on the prototype so XHRInterceptor can patch them
     mockXHR = class {
       readyState = 0;
@@ -19,23 +19,35 @@ describe('XHRInterceptor', () => {
       responseText = '';
       timeout = 0;
       responseURL = '';
-      
+
       HEADERS_RECEIVED = 2;
       DONE = 4;
-      
-      open(...args: any[]) { /* noop */ }
-      send(...args: any[]) { /* noop */ }
-      setRequestHeader(...args: any[]) { /* noop */ }
-      addEventListener(...args: any[]) { /* noop */ }
-      getAllResponseHeaders() { return ''; }
-      getResponseHeader(header: string) { return null; }
+
+      open(...args: any[]) {
+        /* noop */
+      }
+      send(...args: any[]) {
+        /* noop */
+      }
+      setRequestHeader(...args: any[]) {
+        /* noop */
+      }
+      addEventListener(...args: any[]) {
+        /* noop */
+      }
+      getAllResponseHeaders() {
+        return '';
+      }
+      getResponseHeader(header: string) {
+        return null;
+      }
     };
-    
+
     // Spy on the prototype methods
     openSpy = vi.spyOn(mockXHR.prototype, 'open');
     sendSpy = vi.spyOn(mockXHR.prototype, 'send');
     setRequestHeaderSpy = vi.spyOn(mockXHR.prototype, 'setRequestHeader');
-    
+
     global.XMLHttpRequest = mockXHR as any;
 
     const module = await import('../xhr-interceptor');
@@ -57,9 +69,9 @@ describe('XHRInterceptor', () => {
   it('should not re-enable if already enabled', () => {
     XHRInterceptor.enableInterception();
     const originalOpen = XMLHttpRequest.prototype.open;
-    
+
     XHRInterceptor.enableInterception();
-    
+
     expect(XMLHttpRequest.prototype.open).toBe(originalOpen);
   });
 
@@ -77,7 +89,11 @@ describe('XHRInterceptor', () => {
     const xhr = new XMLHttpRequest();
     xhr.open('GET', 'https://example.com');
 
-    expect(openCallback).toHaveBeenCalledWith('GET', 'https://example.com', xhr);
+    expect(openCallback).toHaveBeenCalledWith(
+      'GET',
+      'https://example.com',
+      xhr,
+    );
     expect(openSpy).toHaveBeenCalledWith('GET', 'https://example.com');
   });
 
@@ -109,16 +125,27 @@ describe('XHRInterceptor', () => {
     XHRInterceptor.enableInterception();
 
     const xhr = new XMLHttpRequest();
-    
+
     // Test open
     xhr.open('GET', 'https://example.com');
-    expect(openCallback).toHaveBeenCalledWith('GET', 'https://example.com', xhr);
+    expect(openCallback).toHaveBeenCalledWith(
+      'GET',
+      'https://example.com',
+      xhr,
+    );
     expect(openSpy).toHaveBeenCalledWith('GET', 'https://example.com');
 
     // Test setRequestHeader
     xhr.setRequestHeader('Content-Type', 'application/json');
-    expect(requestHeaderCallback).toHaveBeenCalledWith('Content-Type', 'application/json', xhr);
-    expect(setRequestHeaderSpy).toHaveBeenCalledWith('Content-Type', 'application/json');
+    expect(requestHeaderCallback).toHaveBeenCalledWith(
+      'Content-Type',
+      'application/json',
+      xhr,
+    );
+    expect(setRequestHeaderSpy).toHaveBeenCalledWith(
+      'Content-Type',
+      'application/json',
+    );
 
     // Test send
     // We need to capture the event listener added in send
@@ -133,11 +160,15 @@ describe('XHRInterceptor', () => {
     expect(sendCallback).toHaveBeenCalledWith('data', xhr);
     expect(overrideCallback).toHaveBeenCalledWith(xhr);
     expect(sendSpy).toHaveBeenCalledWith('data');
-    expect(xhr.addEventListener).toHaveBeenCalledWith('readystatechange', expect.any(Function), false);
+    expect(xhr.addEventListener).toHaveBeenCalledWith(
+      'readystatechange',
+      expect.any(Function),
+      false,
+    );
 
     // Test readyState change (HEADERS_RECEIVED)
     expect(readyStateListener).toBeDefined();
-    
+
     // Mock response headers
     xhr.readyState = 2; // HEADERS_RECEIVED
     xhr.getResponseHeader = vi.fn((header) => {
@@ -145,15 +176,17 @@ describe('XHRInterceptor', () => {
       if (header === 'Content-Length') return '123';
       return null;
     });
-    xhr.getAllResponseHeaders = vi.fn(() => 'Content-Type: application/json\r\nContent-Length: 123');
+    xhr.getAllResponseHeaders = vi.fn(
+      () => 'Content-Type: application/json\r\nContent-Length: 123',
+    );
 
     readyStateListener!();
-    
+
     expect(headerReceivedCallback).toHaveBeenCalledWith(
       'application/json',
       123,
       'Content-Type: application/json\r\nContent-Length: 123',
-      xhr
+      xhr,
     );
 
     // Test readyState change (DONE)
@@ -172,7 +205,7 @@ describe('XHRInterceptor', () => {
       '{"success":true}',
       'https://example.com',
       'text',
-      xhr
+      xhr,
     );
   });
 
@@ -200,7 +233,7 @@ describe('XHRInterceptor', () => {
     XHRInterceptor.enableInterception();
 
     const xhr = new XMLHttpRequest();
-    
+
     let readyStateListener: ((...args: any[]) => any) | undefined;
     xhr.addEventListener = vi.fn((event, listener) => {
       if (event === 'readystatechange') {
@@ -215,7 +248,7 @@ describe('XHRInterceptor', () => {
 
     // Trigger event
     xhr.readyState = 2;
-    
+
     readyStateListener!();
 
     expect(headerReceivedCallback).not.toHaveBeenCalled();
@@ -226,20 +259,26 @@ describe('XHRInterceptor', () => {
     const originalGlobalXHR = global.XMLHttpRequest;
     // @ts-expect-error - Testing fallback
     delete global.XMLHttpRequest;
-    
+
     const mockWindowXHR = class {
-      open() { /* noop */ }
-      send() { /* noop */ }
-      setRequestHeader() { /* noop */ }
+      open() {
+        /* noop */
+      }
+      send() {
+        /* noop */
+      }
+      setRequestHeader() {
+        /* noop */
+      }
     };
     // @ts-expect-error - Testing fallback
     global.window = { XMLHttpRequest: mockWindowXHR };
-    
+
     const module = await import('../xhr-interceptor');
     const Interceptor = module.XHRInterceptor;
-    
+
     expect(Interceptor).toBeDefined();
-    
+
     global.XMLHttpRequest = originalGlobalXHR;
     // @ts-expect-error - Testing fallback
     delete global.window;

@@ -35,10 +35,18 @@ describe('OverridesRegistry', () => {
 
   it('should replace overrides when setOverrides is called', () => {
     const url1 = 'http://example.com/1';
-    const override1: RequestOverride = { responseCode: 200, responseContentType: 'text/plain', responseBody: '1' };
-    
+    const override1: RequestOverride = {
+      responseCode: 200,
+      responseContentType: 'text/plain',
+      responseBody: '1',
+    };
+
     const url2 = 'http://example.com/2';
-    const override2: RequestOverride = { responseCode: 200, responseContentType: 'text/plain', responseBody: '2' };
+    const override2: RequestOverride = {
+      responseCode: 200,
+      responseContentType: 'text/plain',
+      responseBody: '2',
+    };
 
     registry.setOverrides([[url1, override1]]);
     expect(registry.getOverrideForUrl(url1)).toBe(override1);

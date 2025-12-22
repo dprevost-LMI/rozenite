@@ -11,13 +11,17 @@ vi.mock('../event-source', () => {
     constructor(url: string) {
       this.url = url;
     }
-    open() { /* noop */ }
+    open() {
+      /* noop */
+    }
     dispatch(type: string, event: any) {
       if (this.listeners[type]) {
-        this.listeners[type].forEach(listener => listener(event));
+        this.listeners[type].forEach((listener) => listener(event));
       }
     }
-    close() { /* noop */ }
+    close() {
+      /* noop */
+    }
     addEventListener(type: string, listener: (...args: any[]) => any) {
       if (!this.listeners[type]) {
         this.listeners[type] = [];
@@ -26,7 +30,9 @@ vi.mock('../event-source', () => {
     }
     removeEventListener(type: string, listener: (...args: any[]) => any) {
       if (this.listeners[type]) {
-        this.listeners[type] = this.listeners[type].filter(l => l !== listener);
+        this.listeners[type] = this.listeners[type].filter(
+          (l) => l !== listener,
+        );
       }
     }
     removeAllEventListeners() {
@@ -58,10 +64,10 @@ describe('SSEInterceptor', () => {
   it('should not re-enable interception if already enabled', () => {
     SSEInterceptor.enableInterception();
     const originalOpen = MockEventSource.prototype.open;
-    
+
     // Try to enable again
     SSEInterceptor.enableInterception();
-    
+
     // Should be the same function (not wrapped twice)
     expect(MockEventSource.prototype.open).toBe(originalOpen);
   });
@@ -80,7 +86,10 @@ describe('SSEInterceptor', () => {
     const eventSource = new MockEventSource('https://example.com');
     eventSource.open();
 
-    expect(connectCallback).toHaveBeenCalledWith('https://example.com', eventSource);
+    expect(connectCallback).toHaveBeenCalledWith(
+      'https://example.com',
+      eventSource,
+    );
   });
 
   it('should intercept dispatch calls for messages', () => {

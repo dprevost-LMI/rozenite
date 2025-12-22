@@ -27,7 +27,7 @@ describe('useSSEInspector', () => {
 
     it('should not setup subscriptions when isEnabled is false', () => {
       renderHook(() =>
-        useSSEInspector(mockClient, mockSSEInspector, false, false)
+        useSSEInspector(mockClient, mockSSEInspector, false, false),
       );
 
       expect(mockClient.onMessage).not.toHaveBeenCalled();
@@ -36,22 +36,22 @@ describe('useSSEInspector', () => {
 
     it('should setup subscriptions when client and isEnabled are truthy', () => {
       renderHook(() =>
-        useSSEInspector(mockClient, mockSSEInspector, true, false)
+        useSSEInspector(mockClient, mockSSEInspector, true, false),
       );
 
       expect(mockClient.onMessage).toHaveBeenCalledWith(
         'network-enable',
-        expect.any(Function)
+        expect.any(Function),
       );
       expect(mockClient.onMessage).toHaveBeenCalledWith(
         'network-disable',
-        expect.any(Function)
+        expect.any(Function),
       );
     });
 
     it('should enable inspector on mount when recording is enabled', () => {
       renderHook(() =>
-        useSSEInspector(mockClient, mockSSEInspector, true, true)
+        useSSEInspector(mockClient, mockSSEInspector, true, true),
       );
 
       expect(mockSSEInspector.enable).toHaveBeenCalledTimes(1);
@@ -59,7 +59,7 @@ describe('useSSEInspector', () => {
 
     it('should not enable inspector on mount when recording is disabled', () => {
       renderHook(() =>
-        useSSEInspector(mockClient, mockSSEInspector, true, false)
+        useSSEInspector(mockClient, mockSSEInspector, true, false),
       );
 
       expect(mockSSEInspector.enable).not.toHaveBeenCalled();
@@ -69,7 +69,7 @@ describe('useSSEInspector', () => {
   describe('network-enable message', () => {
     it('should enable inspector when network-enable message is received', () => {
       renderHook(() =>
-        useSSEInspector(mockClient, mockSSEInspector, true, false)
+        useSSEInspector(mockClient, mockSSEInspector, true, false),
       );
 
       (mockClient as any).triggerMessage('network-enable');
@@ -79,7 +79,7 @@ describe('useSSEInspector', () => {
 
     it('should handle multiple enable calls', () => {
       renderHook(() =>
-        useSSEInspector(mockClient, mockSSEInspector, true, false)
+        useSSEInspector(mockClient, mockSSEInspector, true, false),
       );
 
       (mockClient as any).triggerMessage('network-enable');
@@ -93,7 +93,7 @@ describe('useSSEInspector', () => {
   describe('network-disable message', () => {
     it('should disable inspector when network-disable message is received', () => {
       renderHook(() =>
-        useSSEInspector(mockClient, mockSSEInspector, true, false)
+        useSSEInspector(mockClient, mockSSEInspector, true, false),
       );
 
       (mockClient as any).triggerMessage('network-disable');
@@ -103,7 +103,7 @@ describe('useSSEInspector', () => {
 
     it('should handle multiple disable calls', () => {
       renderHook(() =>
-        useSSEInspector(mockClient, mockSSEInspector, true, false)
+        useSSEInspector(mockClient, mockSSEInspector, true, false),
       );
 
       (mockClient as any).triggerMessage('network-disable');
@@ -116,7 +116,7 @@ describe('useSSEInspector', () => {
   describe('cleanup', () => {
     it('should dispose inspector and remove subscriptions on unmount', () => {
       const { unmount } = renderHook(() =>
-        useSSEInspector(mockClient, mockSSEInspector, true, false)
+        useSSEInspector(mockClient, mockSSEInspector, true, false),
       );
 
       unmount();
@@ -128,7 +128,7 @@ describe('useSSEInspector', () => {
       const { rerender } = renderHook(
         ({ enabled }: { enabled: boolean }) =>
           useSSEInspector(mockClient, mockSSEInspector, enabled, false),
-        { initialProps: { enabled: true } }
+        { initialProps: { enabled: true } },
       );
 
       expect(mockSSEInspector.dispose).not.toHaveBeenCalled();
@@ -143,8 +143,9 @@ describe('useSSEInspector', () => {
       const newMockClient = createMockClient();
 
       const { rerender } = renderHook(
-        ({ client }: { client: ReturnType<typeof createMockClient> }) => useSSEInspector(client, mockSSEInspector, true, false),
-        { initialProps: { client: mockClient } }
+        ({ client }: { client: ReturnType<typeof createMockClient> }) =>
+          useSSEInspector(client, mockSSEInspector, true, false),
+        { initialProps: { client: mockClient } },
       );
 
       expect(mockSSEInspector.dispose).not.toHaveBeenCalled();
@@ -159,7 +160,7 @@ describe('useSSEInspector', () => {
   describe('hot reload support', () => {
     it('should re-enable inspector on mount when recording was previously enabled', () => {
       renderHook(() =>
-        useSSEInspector(mockClient, mockSSEInspector, true, true)
+        useSSEInspector(mockClient, mockSSEInspector, true, true),
       );
 
       expect(mockSSEInspector.enable).toHaveBeenCalledTimes(1);
@@ -167,7 +168,7 @@ describe('useSSEInspector', () => {
 
     it('should handle enable/disable cycles correctly', () => {
       renderHook(() =>
-        useSSEInspector(mockClient, mockSSEInspector, true, false)
+        useSSEInspector(mockClient, mockSSEInspector, true, false),
       );
 
       // Simulate enable/disable cycle
@@ -187,8 +188,12 @@ describe('useSSEInspector', () => {
       const newMockSSEInspector = createMockSSEInspector();
 
       const { rerender } = renderHook(
-        ({ inspector }: { inspector: ReturnType<typeof createMockSSEInspector> }) => useSSEInspector(mockClient, inspector, true, false),
-        { initialProps: { inspector: mockSSEInspector } }
+        ({
+          inspector,
+        }: {
+          inspector: ReturnType<typeof createMockSSEInspector>;
+        }) => useSSEInspector(mockClient, inspector, true, false),
+        { initialProps: { inspector: mockSSEInspector } },
       );
 
       expect(mockSSEInspector.dispose).not.toHaveBeenCalled();
@@ -205,7 +210,7 @@ describe('useSSEInspector', () => {
       const { rerender } = renderHook(
         ({ recording }: { recording: boolean }) =>
           useSSEInspector(mockClient, mockSSEInspector, true, recording),
-        { initialProps: { recording: false } }
+        { initialProps: { recording: false } },
       );
 
       expect(mockSSEInspector.enable).not.toHaveBeenCalled();
@@ -219,9 +224,14 @@ describe('useSSEInspector', () => {
 
     it('should not interfere when both client and isEnabled become falsy', () => {
       const { rerender } = renderHook(
-        ({ client, enabled }: { client: ReturnType<typeof createMockClient> | null, enabled: boolean }) =>
-          useSSEInspector(client, mockSSEInspector, enabled, false),
-        { initialProps: { client: mockClient, enabled: true } }
+        ({
+          client,
+          enabled,
+        }: {
+          client: ReturnType<typeof createMockClient> | null;
+          enabled: boolean;
+        }) => useSSEInspector(client, mockSSEInspector, enabled, false),
+        { initialProps: { client: mockClient, enabled: true } },
       );
 
       // First dispose from changing to disabled

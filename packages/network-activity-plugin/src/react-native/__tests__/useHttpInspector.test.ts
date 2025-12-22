@@ -43,9 +43,7 @@ describe('useHttpInspector', () => {
 
   describe('initialization', () => {
     it('should not setup subscriptions when client is null', () => {
-      renderHook(() =>
-        useHttpInspector(null, mockHttpInspector, true, false)
-      );
+      renderHook(() => useHttpInspector(null, mockHttpInspector, true, false));
 
       expect(mockClient.onMessage).not.toHaveBeenCalled();
       expect(mockHttpInspector.enable).not.toHaveBeenCalled();
@@ -53,7 +51,7 @@ describe('useHttpInspector', () => {
 
     it('should not setup subscriptions when isEnabled is false', () => {
       renderHook(() =>
-        useHttpInspector(mockClient, mockHttpInspector, false, false)
+        useHttpInspector(mockClient, mockHttpInspector, false, false),
       );
 
       expect(mockClient.onMessage).not.toHaveBeenCalled();
@@ -62,30 +60,30 @@ describe('useHttpInspector', () => {
 
     it('should setup subscriptions when client and isEnabled are truthy', () => {
       renderHook(() =>
-        useHttpInspector(mockClient, mockHttpInspector, true, false)
+        useHttpInspector(mockClient, mockHttpInspector, true, false),
       );
 
       expect(mockClient.onMessage).toHaveBeenCalledWith(
         'network-enable',
-        expect.any(Function)
+        expect.any(Function),
       );
       expect(mockClient.onMessage).toHaveBeenCalledWith(
         'network-disable',
-        expect.any(Function)
+        expect.any(Function),
       );
       expect(mockClient.onMessage).toHaveBeenCalledWith(
         'set-overrides',
-        expect.any(Function)
+        expect.any(Function),
       );
       expect(mockClient.onMessage).toHaveBeenCalledWith(
         'get-response-body',
-        expect.any(Function)
+        expect.any(Function),
       );
     });
 
     it('should enable inspector on mount when recording is enabled', () => {
       renderHook(() =>
-        useHttpInspector(mockClient, mockHttpInspector, true, true)
+        useHttpInspector(mockClient, mockHttpInspector, true, true),
       );
 
       expect(mockHttpInspector.enable).toHaveBeenCalledTimes(1);
@@ -93,7 +91,7 @@ describe('useHttpInspector', () => {
 
     it('should not enable inspector on mount when recording is disabled', () => {
       renderHook(() =>
-        useHttpInspector(mockClient, mockHttpInspector, true, false)
+        useHttpInspector(mockClient, mockHttpInspector, true, false),
       );
 
       expect(mockHttpInspector.enable).not.toHaveBeenCalled();
@@ -103,7 +101,7 @@ describe('useHttpInspector', () => {
   describe('network-enable message', () => {
     it('should enable inspector when network-enable message is received', () => {
       renderHook(() =>
-        useHttpInspector(mockClient, mockHttpInspector, true, false)
+        useHttpInspector(mockClient, mockHttpInspector, true, false),
       );
 
       (mockClient as any).triggerMessage('network-enable');
@@ -115,7 +113,7 @@ describe('useHttpInspector', () => {
   describe('network-disable message', () => {
     it('should disable inspector when network-disable message is received', () => {
       renderHook(() =>
-        useHttpInspector(mockClient, mockHttpInspector, true, false)
+        useHttpInspector(mockClient, mockHttpInspector, true, false),
       );
 
       (mockClient as any).triggerMessage('network-disable');
@@ -127,19 +125,19 @@ describe('useHttpInspector', () => {
   describe('set-overrides message', () => {
     it('should set overrides when set-overrides message is received', async () => {
       renderHook(() =>
-        useHttpInspector(mockClient, mockHttpInspector, true, false)
+        useHttpInspector(mockClient, mockHttpInspector, true, false),
       );
 
       const testOverrides = [
         { url: 'https://api.example.com', status: 404, body: 'Not Found' },
       ];
-      
+
       (mockClient as any).triggerMessage('set-overrides', {
         overrides: testOverrides,
       });
 
       expect(mockOverridesRegistry.setOverrides).toHaveBeenCalledWith(
-        testOverrides
+        testOverrides,
       );
     });
   });
@@ -158,7 +156,7 @@ describe('useHttpInspector', () => {
       });
 
       renderHook(() =>
-        useHttpInspector(mockClient, mockHttpInspector, true, false)
+        useHttpInspector(mockClient, mockHttpInspector, true, false),
       );
 
       await (mockClient as any).triggerMessage('get-response-body', {
@@ -183,7 +181,7 @@ describe('useHttpInspector', () => {
       });
 
       renderHook(() =>
-        useHttpInspector(mockClient, mockHttpInspector, true, false)
+        useHttpInspector(mockClient, mockHttpInspector, true, false),
       );
 
       await (mockClient as any).triggerMessage('get-response-body', {
@@ -192,7 +190,7 @@ describe('useHttpInspector', () => {
 
       expect(mockClient.send).not.toHaveBeenCalledWith(
         'response-body',
-        expect.anything()
+        expect.anything(),
       );
     });
 
@@ -210,7 +208,7 @@ describe('useHttpInspector', () => {
       });
 
       renderHook(() =>
-        useHttpInspector(mockClient, mockHttpInspector, true, false)
+        useHttpInspector(mockClient, mockHttpInspector, true, false),
       );
 
       await (mockClient as any).triggerMessage('get-response-body', {
@@ -229,7 +227,7 @@ describe('useHttpInspector', () => {
   describe('cleanup', () => {
     it('should dispose inspector and remove subscriptions on unmount', () => {
       const { unmount } = renderHook(() =>
-        useHttpInspector(mockClient, mockHttpInspector, true, false)
+        useHttpInspector(mockClient, mockHttpInspector, true, false),
       );
 
       const subscriptionRemove = vi.fn();
@@ -246,7 +244,7 @@ describe('useHttpInspector', () => {
       const { rerender } = renderHook(
         ({ enabled }: { enabled: boolean }) =>
           useHttpInspector(mockClient, mockHttpInspector, enabled, false),
-        { initialProps: { enabled: true } }
+        { initialProps: { enabled: true } },
       );
 
       expect(mockHttpInspector.dispose).not.toHaveBeenCalled();
@@ -261,7 +259,7 @@ describe('useHttpInspector', () => {
   describe('hot reload support', () => {
     it('should re-enable inspector on mount when recording was previously enabled', () => {
       renderHook(() =>
-        useHttpInspector(mockClient, mockHttpInspector, true, true)
+        useHttpInspector(mockClient, mockHttpInspector, true, true),
       );
 
       expect(mockHttpInspector.enable).toHaveBeenCalledTimes(1);
@@ -269,7 +267,7 @@ describe('useHttpInspector', () => {
 
     it('should handle multiple enable/disable cycles', () => {
       renderHook(() =>
-        useHttpInspector(mockClient, mockHttpInspector, true, false)
+        useHttpInspector(mockClient, mockHttpInspector, true, false),
       );
 
       (mockClient as any).triggerMessage('network-enable');

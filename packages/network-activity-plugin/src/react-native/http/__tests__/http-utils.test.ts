@@ -1,5 +1,11 @@
 import { describe, it, expect, vi } from 'vitest';
-import { getRequestBody, getResponseSize, getInitiatorFromStack, setupRequestOverride, getResponseBody } from '../http-utils';
+import {
+  getRequestBody,
+  getResponseSize,
+  getInitiatorFromStack,
+  setupRequestOverride,
+  getResponseBody,
+} from '../http-utils';
 import { OverridesRegistry } from '../overrides-registry';
 import { getContentType } from '../../utils';
 import { getFormDataEntries } from '../../utils/getFormDataEntries';
@@ -10,7 +16,7 @@ vi.mock('../../../utils/safeStringify', () => ({
 }));
 
 vi.mock('../../../utils/getStringSizeInBytes', () => ({
-  getStringSizeInBytes: vi.fn((str) => str ? str.length : 0),
+  getStringSizeInBytes: vi.fn((str) => (str ? str.length : 0)),
 }));
 
 vi.mock('../../../utils/typeChecks', () => ({
@@ -84,11 +90,11 @@ describe('http-utils', () => {
       const formData = { _isFormData: true };
       const blob = { _isBlob: true, size: 100, type: 'image/png' };
       const buffer = { _isArrayBuffer: true, byteLength: 50 };
-      
+
       vi.mocked(getFormDataEntries).mockReturnValue([
         ['blobKey', blob],
         ['bufferKey', buffer],
-        ['textKey', 'textValue']
+        ['textKey', 'textValue'],
       ]);
 
       expect(getRequestBody(formData)).toEqual({
@@ -123,7 +129,11 @@ describe('http-utils', () => {
 
   describe('getResponseSize', () => {
     it('should return size from response string', () => {
-      const xhr = { responseType: 'text', response: '12345', responseText: '12345' } as any;
+      const xhr = {
+        responseType: 'text',
+        response: '12345',
+        responseText: '12345',
+      } as any;
       expect(getResponseSize(xhr)).toBe(5);
     });
 
@@ -133,12 +143,20 @@ describe('http-utils', () => {
     });
 
     it('should return size from responseText', () => {
-      const xhr = { responseType: '', responseText: '12345', response: '12345' } as any;
+      const xhr = {
+        responseType: '',
+        responseText: '12345',
+        response: '12345',
+      } as any;
       expect(getResponseSize(xhr)).toBe(5);
     });
 
     it('should return 0 if no response', () => {
-      const xhr = { responseType: '', response: null, responseText: null } as any;
+      const xhr = {
+        responseType: '',
+        response: null,
+        responseText: null,
+      } as any;
       expect(getResponseSize(xhr)).toBe(0);
     });
 
@@ -153,7 +171,10 @@ describe('http-utils', () => {
     });
 
     it('should return size from arraybuffer', () => {
-      const xhr = { responseType: 'arraybuffer', response: { byteLength: 50 } } as any;
+      const xhr = {
+        responseType: 'arraybuffer',
+        response: { byteLength: 50 },
+      } as any;
       expect(getResponseSize(xhr)).toBe(50);
     });
 
@@ -192,7 +213,8 @@ describe('http-utils', () => {
       const xhr = {
         responseType: 'blob',
         response: { size: 100 },
-        getResponseHeader: (header: string) => (header === 'Content-Type' ? 'text/plain' : null),
+        getResponseHeader: (header: string) =>
+          header === 'Content-Type' ? 'text/plain' : null,
       } as any;
 
       const originalFileReader = global.FileReader;
@@ -204,7 +226,7 @@ describe('http-utils', () => {
           this.onload();
         }
       } as any;
-      
+
       const result = await getResponseBody(xhr);
       expect(result).toBe('hello');
 
@@ -215,7 +237,8 @@ describe('http-utils', () => {
       const xhr = {
         responseType: 'blob',
         response: { size: 100 },
-        getResponseHeader: (header: string) => (header === 'Content-Type' ? 'application/json' : null),
+        getResponseHeader: (header: string) =>
+          header === 'Content-Type' ? 'application/json' : null,
       } as any;
 
       const originalFileReader = global.FileReader;
@@ -246,8 +269,8 @@ describe('http-utils', () => {
     });
 
     it('should return null for other types', async () => {
-       const xhr = { responseType: 'arraybuffer' } as any;
-       expect(await getResponseBody(xhr)).toBeNull();
+      const xhr = { responseType: 'arraybuffer' } as any;
+      expect(await getResponseBody(xhr)).toBeNull();
     });
   });
 
@@ -277,7 +300,7 @@ describe('http-utils', () => {
       // Line 1: at a
       // ...
       // Line 9: at i (file.js:9:9)
-      
+
       expect(initiator).toEqual({
         type: 'script',
         url: 'file.js',
@@ -359,16 +382,21 @@ describe('http-utils', () => {
 
       setupRequestOverride(registry, xhr);
 
-      expect(registry.getOverrideForUrl).toHaveBeenCalledWith('https://api.example.com');
-      expect(xhr.addEventListener).toHaveBeenCalledWith('readystatechange', expect.any(Function));
-      
+      expect(registry.getOverrideForUrl).toHaveBeenCalledWith(
+        'https://api.example.com',
+      );
+      expect(xhr.addEventListener).toHaveBeenCalledWith(
+        'readystatechange',
+        expect.any(Function),
+      );
+
       // Trigger the listener
       const listener = xhr.addEventListener.mock.calls[0][1];
-      
+
       vi.mocked(getContentType).mockReturnValue('application/json');
-      
+
       listener();
-      
+
       expect(xhr.responseType).toBe('json');
       expect(xhr.response).toBe('{"mock":true}');
       expect(xhr.responseText).toBe('{"mock":true}');
@@ -391,13 +419,13 @@ describe('http-utils', () => {
       } as any;
 
       setupRequestOverride(registry, xhr);
-      
+
       const listener = xhr.addEventListener.mock.calls[0][1];
-      
+
       vi.mocked(getContentType).mockReturnValue('text/plain');
-      
+
       listener();
-      
+
       expect(xhr.responseType).toBe('text');
     });
 

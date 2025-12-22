@@ -1,7 +1,12 @@
 import { createNanoEvents } from 'nanoevents';
 import { getNetworkRequestsRegistry } from './network-requests-registry';
 import { XHRInterceptor } from './xhr-interceptor';
-import { getRequestBody, getResponseSize, getInitiatorFromStack, setupRequestOverride } from './http-utils';
+import {
+  getRequestBody,
+  getResponseSize,
+  getInitiatorFromStack,
+  setupRequestOverride,
+} from './http-utils';
 import { applyReactNativeResponseHeadersLogic } from '../../utils/applyReactNativeResponseHeadersLogic';
 import { getContentType } from '../utils';
 import { getOverridesRegistry } from './overrides-registry';
@@ -28,7 +33,9 @@ type NanoEventsMap = {
 };
 
 export type HTTPInspector = Inspector<HttpEventMap> & {
-  getNetworkRequestsRegistry: () => ReturnType<typeof getNetworkRequestsRegistry>;
+  getNetworkRequestsRegistry: () => ReturnType<
+    typeof getNetworkRequestsRegistry
+  >;
 };
 
 const READY_STATE_HEADERS_RECEIVED = 2;
@@ -39,9 +46,9 @@ export const getHTTPInspector = (): HTTPInspector => {
 
   const overridesRegistry = getOverridesRegistry();
   XHRInterceptor.setOverrideCallback((request) =>
-    setupRequestOverride(overridesRegistry, request)
+    setupRequestOverride(overridesRegistry, request),
   );
-  
+
   return {
     enable: () => {
       XHRInterceptor.disableInterception();
@@ -166,7 +173,7 @@ export const getHTTPInspector = (): HTTPInspector => {
 
     on: <TEventType extends keyof HttpEventMap>(
       event: TEventType,
-      callback: (data: HttpEventMap[TEventType]) => void
+      callback: (data: HttpEventMap[TEventType]) => void,
     ) => eventEmitter.on(event, callback as NanoEventsMap[TEventType]),
   };
 };

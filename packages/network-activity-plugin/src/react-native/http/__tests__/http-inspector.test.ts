@@ -54,7 +54,7 @@ describe('HTTPInspector', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     eventListeners = {};
     mockXHR = {
       _url: 'https://api.example.com/data',
@@ -103,121 +103,140 @@ describe('HTTPInspector', () => {
   it('should handle missing response headers', () => {
     const listener = vi.fn();
     inspector.on('response-received', listener);
-    
+
     vi.mocked(XHRInterceptor.isInterceptorEnabled).mockReturnValue(false);
     inspector.enable();
-    
-    const sendCallback = vi.mocked(XHRInterceptor.setSendCallback).mock.calls[0][0];
-    
-    const xhrWithoutHeaders = { 
-      ...mockXHR, 
+
+    const sendCallback = vi.mocked(XHRInterceptor.setSendCallback).mock
+      .calls[0][0];
+
+    const xhrWithoutHeaders = {
+      ...mockXHR,
       responseHeaders: undefined,
       addEventListener: vi.fn((event, handler) => {
         eventListeners[event] = handler;
       }),
     };
-    
+
     sendCallback('request-body', xhrWithoutHeaders);
-    
+
     // Trigger load event
     eventListeners['load']();
-    
-    expect(listener).toHaveBeenCalledWith(expect.objectContaining({
-      response: expect.objectContaining({
-        headers: {},
+
+    expect(listener).toHaveBeenCalledWith(
+      expect.objectContaining({
+        response: expect.objectContaining({
+          headers: {},
+        }),
       }),
-    }));
+    );
   });
 
   it('should handle request abort', () => {
     const listener = vi.fn();
     inspector.on('request-failed', listener);
-    
+
     vi.mocked(XHRInterceptor.isInterceptorEnabled).mockReturnValue(false);
     inspector.enable();
 
-    const sendCallback = vi.mocked(XHRInterceptor.setSendCallback).mock.calls[0][0];
+    const sendCallback = vi.mocked(XHRInterceptor.setSendCallback).mock
+      .calls[0][0];
     sendCallback('test-data', mockXHR);
 
     // Trigger abort
     eventListeners['abort']();
 
-    expect(listener).toHaveBeenCalledWith(expect.objectContaining({
-      type: 'XHR',
-      error: 'Aborted',
-      canceled: true,
-    }));
+    expect(listener).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'XHR',
+        error: 'Aborted',
+        canceled: true,
+      }),
+    );
   });
 
   it('should handle request timeout', () => {
     const listener = vi.fn();
     inspector.on('request-failed', listener);
-    
+
     vi.mocked(XHRInterceptor.isInterceptorEnabled).mockReturnValue(false);
     inspector.enable();
 
-    const sendCallback = vi.mocked(XHRInterceptor.setSendCallback).mock.calls[0][0];
+    const sendCallback = vi.mocked(XHRInterceptor.setSendCallback).mock
+      .calls[0][0];
     sendCallback('test-data', mockXHR);
 
     // Trigger timeout
     eventListeners['timeout']();
 
-    expect(listener).toHaveBeenCalledWith(expect.objectContaining({
-      type: 'XHR',
-      error: 'Timeout',
-      canceled: false,
-    }));
+    expect(listener).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'XHR',
+        error: 'Timeout',
+        canceled: false,
+      }),
+    );
   });
 
   it('should calculate TTFB on readystatechange', () => {
     vi.mocked(XHRInterceptor.isInterceptorEnabled).mockReturnValue(false);
     inspector.enable();
-    
-    const sendCallback = vi.mocked(XHRInterceptor.setSendCallback).mock.calls[0][0];
-    
+
+    const sendCallback = vi.mocked(XHRInterceptor.setSendCallback).mock
+      .calls[0][0];
+
     const request = { ...mockXHR };
     request.addEventListener = vi.fn((event, handler) => {
       eventListeners[event] = handler;
     });
-    
+
     sendCallback('data', request);
-    
+
     // Trigger readystatechange with HEADERS_RECEIVED (2)
     request.readyState = 2;
     eventListeners['readystatechange']();
-    
+
     const listener = vi.fn();
     inspector.on('request-completed', listener);
     eventListeners['loadend']();
-    
-    expect(listener).toHaveBeenCalledWith(expect.objectContaining({
-      ttfb: expect.any(Number),
-    }));
+
+    expect(listener).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ttfb: expect.any(Number),
+      }),
+    );
   });
 
   it('should handle request progress', () => {
     const listener = vi.fn();
     inspector.on('request-progress', listener);
-    
+
     vi.mocked(XHRInterceptor.isInterceptorEnabled).mockReturnValue(false);
     inspector.enable();
-    
-    const sendCallback = vi.mocked(XHRInterceptor.setSendCallback).mock.calls[0][0];
-    
+
+    const sendCallback = vi.mocked(XHRInterceptor.setSendCallback).mock
+      .calls[0][0];
+
     const request = { ...mockXHR };
     request.addEventListener = vi.fn((event, handler) => {
       eventListeners[event] = handler;
     });
-    
+
     sendCallback('data', request);
-    
-    eventListeners['progress']({ loaded: 50, total: 100, lengthComputable: true });
-    
-    expect(listener).toHaveBeenCalledWith(expect.objectContaining({
+
+    eventListeners['progress']({
       loaded: 50,
       total: 100,
       lengthComputable: true,
-    }));
+    });
+
+    expect(listener).toHaveBeenCalledWith(
+      expect.objectContaining({
+        loaded: 50,
+        total: 100,
+        lengthComputable: true,
+      }),
+    );
   });
 
   it('should dispose correctly', () => {
@@ -235,7 +254,7 @@ describe('HTTPInspector', () => {
   it('should check if interception is enabled', () => {
     vi.mocked(XHRInterceptor.isInterceptorEnabled).mockReturnValue(true);
     expect(inspector.isEnabled()).toBe(true);
-    
+
     vi.mocked(XHRInterceptor.isInterceptorEnabled).mockReturnValue(false);
     expect(inspector.isEnabled()).toBe(false);
   });
@@ -257,17 +276,17 @@ describe('HTTPInspector', () => {
     beforeEach(() => {
       vi.mocked(XHRInterceptor.isInterceptorEnabled).mockReturnValue(false);
       inspector.enable();
-      
+
       // Capture the send callback
       sendCallback = vi.mocked(XHRInterceptor.setSendCallback).mock.calls[0][0];
-      
+
       // Setup event spies
       requestSentSpy = vi.fn();
       responseReceivedSpy = vi.fn();
       requestCompletedSpy = vi.fn();
       requestFailedSpy = vi.fn();
       requestProgressSpy = vi.fn();
-      
+
       inspector.on('request-sent', requestSentSpy);
       inspector.on('response-received', responseReceivedSpy);
       inspector.on('request-completed', requestCompletedSpy);
@@ -281,84 +300,96 @@ describe('HTTPInspector', () => {
       expect(mockXHR._rozeniteRequestId).toBeDefined();
       expect(getNetworkRequestsRegistry().addEntry).toHaveBeenCalledWith(
         mockXHR._rozeniteRequestId,
-        mockXHR
+        mockXHR,
       );
-      
-      expect(requestSentSpy).toHaveBeenCalledWith(expect.objectContaining({
-        requestId: mockXHR._rozeniteRequestId,
-        request: expect.objectContaining({
-          url: 'https://api.example.com/data',
-          method: 'GET',
-          postData: 'test-body',
+
+      expect(requestSentSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          requestId: mockXHR._rozeniteRequestId,
+          request: expect.objectContaining({
+            url: 'https://api.example.com/data',
+            method: 'GET',
+            postData: 'test-body',
+          }),
+          initiator: 'test-initiator',
         }),
-        initiator: 'test-initiator',
-      }));
+      );
     });
 
     it('should handle request progress', () => {
       sendCallback(null, mockXHR);
-      
+
       const progressEvent = {
         loaded: 50,
         total: 100,
         lengthComputable: true,
       };
-      
+
       eventListeners['progress'](progressEvent);
-      
-      expect(requestProgressSpy).toHaveBeenCalledWith(expect.objectContaining({
-        requestId: mockXHR._rozeniteRequestId,
-        loaded: 50,
-        total: 100,
-        lengthComputable: true,
-      }));
+
+      expect(requestProgressSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          requestId: mockXHR._rozeniteRequestId,
+          loaded: 50,
+          total: 100,
+          lengthComputable: true,
+        }),
+      );
     });
 
     it('should handle request load (success)', () => {
       sendCallback(null, mockXHR);
-      
+
       // Simulate headers received to calculate TTFB
       mockXHR.readyState = 2; // HEADERS_RECEIVED
       eventListeners['readystatechange']();
-      
+
       // Simulate load
       eventListeners['load']();
       eventListeners['loadend']();
-      
-      expect(responseReceivedSpy).toHaveBeenCalledWith(expect.objectContaining({
-        requestId: mockXHR._rozeniteRequestId,
-        response: expect.objectContaining({
-          status: 200,
-          statusText: 'OK',
+
+      expect(responseReceivedSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          requestId: mockXHR._rozeniteRequestId,
+          response: expect.objectContaining({
+            status: 200,
+            statusText: 'OK',
+          }),
         }),
-      }));
-      
-      expect(requestCompletedSpy).toHaveBeenCalledWith(expect.objectContaining({
-        requestId: mockXHR._rozeniteRequestId,
-        size: 100,
-      }));
+      );
+
+      expect(requestCompletedSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          requestId: mockXHR._rozeniteRequestId,
+          size: 100,
+        }),
+      );
     });
 
     it('should handle request error', () => {
       sendCallback(null, mockXHR);
-      
+
       eventListeners['error']({ type: 'error' });
-      
-      expect(requestFailedSpy).toHaveBeenCalledWith(expect.objectContaining({
-        requestId: mockXHR._rozeniteRequestId,
-        error: 'Failed',
-      }));
+
+      expect(requestFailedSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          requestId: mockXHR._rozeniteRequestId,
+          error: 'Failed',
+        }),
+      );
     });
 
     it('should handle request timeout', () => {
       sendCallback(null, mockXHR);
-      
+
       eventListeners['timeout']({ type: 'timeout' });
-      
-      expect(requestFailedSpy).toHaveBeenCalledWith(expect.objectContaining({
-        requestId: mockXHR._rozeniteRequestId,
-        error: 'Timeout',
-      }));
+
+      expect(requestFailedSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          requestId: mockXHR._rozeniteRequestId,
+          error: 'Timeout',
+        }),
+      );
     });
   });
 });
@@ -383,17 +414,17 @@ describe('isHttpEvent', () => {
     const inspector = getHTTPInspector();
     const listener = vi.fn();
     const unsubscribe = inspector.on('request-sent', listener);
-    
+
     expect(unsubscribe).toBeDefined();
     expect(typeof unsubscribe).toBe('function');
-    
+
     unsubscribe();
   });
 
   it('should dispose correctly', () => {
     const inspector = getHTTPInspector();
     inspector.dispose();
-    
+
     expect(XHRInterceptor.disableInterception).toHaveBeenCalled();
     expect(getNetworkRequestsRegistry().clear).toHaveBeenCalled();
   });
@@ -403,12 +434,16 @@ describe('Override Callback', () => {
   it('should setup request override when callback is triggered', () => {
     vi.clearAllMocks();
     getHTTPInspector();
-    
-    const overrideCallback = vi.mocked(XHRInterceptor.setOverrideCallback).mock.calls[0][0];
+
+    const overrideCallback = vi.mocked(XHRInterceptor.setOverrideCallback).mock
+      .calls[0][0];
     const mockRequest = {} as any;
-    
+
     overrideCallback(mockRequest);
-    
-    expect(setupRequestOverride).toHaveBeenCalledWith(getOverridesRegistry(), mockRequest);
+
+    expect(setupRequestOverride).toHaveBeenCalledWith(
+      getOverridesRegistry(),
+      mockRequest,
+    );
   });
 });

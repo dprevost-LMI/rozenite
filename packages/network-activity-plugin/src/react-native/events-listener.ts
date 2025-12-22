@@ -36,7 +36,7 @@ export class EventsListener<TEventMap extends Record<string, unknown>> {
    */
   public connect(
     sendFn: SendFunction<TEventMap>,
-    filterFn?: (message: QueuedMessage<TEventMap>) => boolean
+    filterFn?: (message: QueuedMessage<TEventMap>) => boolean,
   ): void {
     this.sendFunction = sendFn;
     this.isQueuing = false;
@@ -67,7 +67,7 @@ export class EventsListener<TEventMap extends Record<string, unknown>> {
   }
 
   private flushQueue(
-    filterFn?: (message: QueuedMessage<TEventMap>) => boolean
+    filterFn?: (message: QueuedMessage<TEventMap>) => boolean,
   ): void {
     if (!this.sendFunction) {
       return;
@@ -97,6 +97,8 @@ export type EventsListenerOptions = {
  * Create a new events listener instance for a specific event map.
  * This factory can be used to create listeners for different protocols or plugins.
  */
-export const createEventsListener = <TEventMap extends Record<string, unknown>>(): EventsListener<TEventMap> => {
+export const createEventsListener = <
+  TEventMap extends Record<string, unknown>,
+>(): EventsListener<TEventMap> => {
   return new EventsListener<TEventMap>();
 };

@@ -22,9 +22,7 @@ export const isSSEEvent = (type: string): type is keyof SSEEventMap => {
   return (SSE_EVENTS as readonly string[]).includes(type);
 };
 
-const getRequestId = (
-  eventSource: EventSourceWithInternals
-): string | null => {
+const getRequestId = (eventSource: EventSourceWithInternals): string | null => {
   const requestId = eventSource._xhr?._rozeniteRequestId;
 
   if (!requestId) {
@@ -135,7 +133,7 @@ export const getSSEInspector = (): SSEInspector => {
     },
     on: <TEventType extends keyof SSEEventMap>(
       event: TEventType,
-      callback: (data: SSEEventMap[TEventType]) => void
+      callback: (data: SSEEventMap[TEventType]) => void,
     ) => eventEmitter.on(event, callback as NanoEventsMap[TEventType]),
   };
 };

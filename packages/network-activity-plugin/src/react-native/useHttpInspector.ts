@@ -10,15 +10,14 @@ export const useHttpInspector = (
   client: NetworkActivityDevToolsClient | null,
   httpInspector: HTTPInspector,
   isEnabled: boolean,
-  isRecordingEnabled: boolean
+  isRecordingEnabled: boolean,
 ) => {
   useEffect(() => {
     if (!client || !isEnabled) {
       return;
     }
 
-    const networkRequestsRegistry =
-      httpInspector.getNetworkRequestsRegistry();
+    const networkRequestsRegistry = httpInspector.getNetworkRequestsRegistry();
 
     const subscriptions = [
       client.onMessage('network-enable', () => {

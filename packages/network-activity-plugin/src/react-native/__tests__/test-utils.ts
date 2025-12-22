@@ -35,9 +35,11 @@ export const createMockClient = (): NetworkActivityDevToolsClient => {
   };
 
   // Add method to trigger message handlers for testing
-  (client as NetworkActivityDevToolsClient & {
-    triggerMessage: (event: string, data?: unknown) => void;
-  }).triggerMessage = (event: string, data?: unknown) => {
+  (
+    client as NetworkActivityDevToolsClient & {
+      triggerMessage: (event: string, data?: unknown) => void;
+    }
+  ).triggerMessage = (event: string, data?: unknown) => {
     const handlers = messageHandlers.get(event);
     if (handlers) {
       handlers.forEach((handler) => handler(data));
